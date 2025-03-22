@@ -9,6 +9,7 @@ const app = express();
 const appointmentsRouter=require("./routes/appointment.route")
 const projectsRouter=require("./routes/project.route")
 const userRouter =require("./routes/user.route")
+const categorieRouter =require("./routes/categorie.route")
 
 
 
@@ -32,12 +33,13 @@ mongoose.connect(process.env.DATABASE)
 .then(() => {console.log("DataBase Successfully Connected");})
 .catch(err => { console.log("Unable to connect to database", err);
 process.exit(); });
-
+  
 
 
 app.use("/api/appointments",appointmentsRouter)
 app.use("/api/projects",projectsRouter)
 app.use('/api/users', userRouter);
+app.use('/api/categories', categorieRouter);
 
 
 
