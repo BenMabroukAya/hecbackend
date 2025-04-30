@@ -16,7 +16,8 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ["user", "admin", "client"],
+        enum: ["user", "admin"], //, "client" has been removed will be added when hec administrator gives permission
+                                 // user is the simple user or site's visitor
         default: "user"
     },
 

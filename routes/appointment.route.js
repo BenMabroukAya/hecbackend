@@ -1,3 +1,5 @@
+/*
+
 // Create : /
 // GetAll : /
 // GetById : /:id
@@ -71,3 +73,6 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
+
+
+*/

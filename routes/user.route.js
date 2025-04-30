@@ -8,6 +8,8 @@ const router = express.Router();
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 
+
+/*
 // Register a new user
 router.post('/register', async (req, res) => {
     try {
@@ -62,6 +64,9 @@ router.post('/register', async (req, res) => {
     }
 });
 */
+
+
+
 
 // Get all users
 router.get('/', async (req, res) => {

@@ -97,11 +97,21 @@ router.put('/:id', async (req, res) => {
 });*/
 
 
-router.delete('/:id', async (req, res)=> {
+/*router.delete('/:id', async (req, res)=> {
     const id = req.params.projectId;
     await Project.findByIdAndDelete(id);
     res.json({ message: "project deleted successfully." });
-    });
+    });*/
+
+    router.delete('/:id', async (req, res) => {
+        try {
+          await Project.findByIdAndDelete(req.params.id);
+          res.json({ message: "project deleted successfully." });
+        } catch (error) {
+          res.status(500).json({ message: error.message });
+        }
+      });
+      
 
 
 

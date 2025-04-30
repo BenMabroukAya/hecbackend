@@ -6,10 +6,12 @@ const app = express();
 
 
 
-const appointmentsRouter=require("./routes/appointment.route")
+//const appointmentsRouter=require("./routes/appointment.route")
 const projectsRouter=require("./routes/project.route")
 const userRouter =require("./routes/user.route")
 const categorieRouter =require("./routes/categorie.route")
+const scategorieRouter =require("./routes/scategorie.route")
+const messageRouter =require("./routes/message.route")
 
 
 
@@ -36,11 +38,12 @@ process.exit(); });
   
 
 
-app.use("/api/appointments",appointmentsRouter)
+//app.use("/api/appointments",appointmentsRouter)
 app.use("/api/projects",projectsRouter)
 app.use('/api/users', userRouter);
 app.use('/api/categories', categorieRouter);
-
+app.use('/api/scategories', scategorieRouter);
+app.use('/api/messages', messageRouter);
 
 
 //dist reactjs
@@ -59,6 +62,13 @@ app.get("/",(req,res)=>{
 res.send("Welcome To HEC Society!");
 });
 
+//middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+  });
+
+  
 
 // démarrage du serveur
 app.listen(process.env.PORT, () => {

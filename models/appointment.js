@@ -1,3 +1,8 @@
+// appointment will be modified as administrator's order
+// it will be like a simple message sended directly to admin's mail box 
+// it could be a feedback , a question , an appointment request 
+// there will be two textholder one for email (required) and the other for message to send (required)
+
 const mongoose = require("mongoose");
 
 const AppointmentSchema = new mongoose.Schema({
