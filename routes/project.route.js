@@ -45,7 +45,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Get a single project by ID
+/*// Get a single project by ID
 router.get('/:id', async (req, res) => {
     try {
         const project = await Project.findById(req.params.id);
@@ -55,6 +55,54 @@ router.get('/:id', async (req, res) => {
         res.status(200).json(project);
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+});*/
+
+/*// Modified route to find by numeric ID
+router.get('/:id', async (req, res) => {
+    try {
+        const project = await Project.findOne({ id: parseInt(req.params.id) }); // Look for custom 'id' field
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        res.status(200).json(project);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});*/
+
+/*// Updated route to handle BOTH ObjectId and numeric ID
+router.get('/:id', async (req, res) => {
+    try {
+        let project;
+        
+        // Check if the ID is a valid MongoDB ObjectId
+        if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+            project = await Project.findById(req.params.id);
+        } 
+        // Otherwise search by numeric ID
+        else {
+            project = await Project.findOne({ id: parseInt(req.params.id) });
+        }
+
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        res.status(200).json(project);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});*/
+
+
+// Get project By Id
+router.get('/:projectId',async(req, res)=>{
+    try {
+        const art = await Project.findById(req.params.articleId);
+        
+        res.status(200).json(art);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
     }
 });
 

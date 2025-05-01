@@ -26,6 +26,7 @@ const mongoose = require("mongoose");
 const Scategorie = require("./scategorie.js");
 
 const ProjectSchema = new mongoose.Schema({
+  
   title: { type: String, required: true },
   photo: { type: String },
   description: { type: String, required: true },
