@@ -1,5 +1,12 @@
 {
     "version": 2,
+    "builds": [{ "src": "api/index.js", "use": "@vercel/node" }],
+    "routes": [{ "src": "/(.*)", "dest": "api/index.js" }]
+  }
+  
+
+/*{
+    "version": 2,
     "name": "nodejs-mongodb",
     "builds": [
     { "src": "app.js", "use": "@vercel/node" }
@@ -8,6 +15,6 @@
     
     { "src": "/(.*)", "dest": "/app.js", "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"] }
     ]
-    }
+    }*/
 
    
