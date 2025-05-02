@@ -18,6 +18,60 @@ dotenv.config();
 app.use(cors());
 app.use(express.json());
 
+// Connexion à la base de données
+mongoose.connect(process.env.MONGODB_URI || process.env.DATABASE, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log("Successfully connected to MongoDB Atlas"))
+.catch(err => {
+  console.error("Database connection error:", err);
+  process.exit(1);
+});
+
+// Routes
+app.use("/api/projects", projectsRouter);
+app.use('/api/users', userRouter);
+app.use('/api/categories', categorieRouter);
+app.use('/api/scategories', scategorieRouter);
+app.use('/api/messages', messageRouter);
+
+// Test route
+app.get("/", (req, res) => {
+  res.send("Welcome To HEC Society!");
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
+
+
+
+module.exports = app;
+
+
+/*const express = require('express');
+const mongoose = require("mongoose");
+const dotenv = require('dotenv');
+const cors = require('cors');
+const app = express();
+
+// Routes
+const projectsRouter = require("./routes/project.route");
+const userRouter = require("./routes/user.route");
+const categorieRouter = require("./routes/categorie.route");
+const scategorieRouter = require("./routes/scategorie.route");
+const messageRouter = require("./routes/message.route");
+
+// Config dotenv
+dotenv.config();
+
+// Middlewares
+app.use(cors());
+app.use(express.json());
+
 // Connexion à la base de données (version corrigée)
 mongoose.connect(process.env.MONGODB_URI || process.env.DATABASE, {
   useNewUrlParser: true,
