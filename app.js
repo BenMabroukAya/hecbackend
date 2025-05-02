@@ -26,7 +26,7 @@ mongoose.connect(process.env.MONGODB_URI || process.env.DATABASE, {
 .then(() => console.log("Successfully connected to MongoDB Atlas"))
 .catch(err => {
   console.error("Database connection error:", err);
-  process.exit(1);
+  // process.exit(1);
 });
 
 // Routes
