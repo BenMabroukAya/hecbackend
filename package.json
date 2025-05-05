@@ -8,9 +8,9 @@
     "start": "nodemon app"
   },
   "keywords": [],
-  "author": "",
+  "author": "AYA BEN MABROUK",
   "license": "ISC",
-  "description": "",
+  "description": "Web Site For HecElectricity",
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",

@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Optional: Delete a message
+//  Delete a message
 router.delete('/:id', async (req, res) => {
   try {
     const deleted = await Message.findByIdAndDelete(req.params.id);
