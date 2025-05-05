@@ -116,7 +116,7 @@ src/
 ├── tests/
 └── config/
 🧑‍💻 Contributors
-[BEN MABROUK AYA] – Backend Developer
+[BEN MABROUK AYA] – Full-Stack Developer
 
 📄 License
 MIT License
