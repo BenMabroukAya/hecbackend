@@ -1,3 +1,4 @@
+/*
 // appointment will be modified as administrator's order
 // it will be like a simple message sended directly to admin's mail box 
 // it could be a feedback , a question , an appointment request 
@@ -13,3 +14,4 @@ const AppointmentSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model("Appointment", AppointmentSchema);
+*/
