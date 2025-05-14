@@ -61,4 +61,16 @@ router.get('/:categorieId',async(req, res)=>{
 res.status(404).json({ message: error.message });
 }
 });
+
+// Rechercher une catégorie par Datecategorie
+router.get('/date/:date', async (req, res) => {
+    try {
+        const cat = await Categorie.findOne({ Datecategorie: req.params.date });
+        if (!cat) return res.status(404).json({ message: "Aucune catégorie trouvée pour cette date" });
+        res.status(200).json(cat);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = router;

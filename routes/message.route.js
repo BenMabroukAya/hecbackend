@@ -23,6 +23,33 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get message by ID
+router.get('/:id', async (req, res) => {
+  try {
+    const message = await Message.findById(req.params.id);
+    if (!message) return res.status(404).json({ message: 'Message not found' });
+    res.json(message);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update a message by ID
+router.put('/:id', async (req, res) => {
+  try {
+    const updated = await Message.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Message not found' });
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+
 //  Delete a message
 router.delete('/:id', async (req, res) => {
   try {

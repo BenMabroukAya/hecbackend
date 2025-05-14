@@ -1,3 +1,27 @@
+const mongoose = require("mongoose");
+
+const ProjectSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  photo: { type: String },
+  description: { type: String, required: true },
+  status: { type: String, enum: ["En cours", "Terminé"], default: "En cours" },
+
+  scategorieID: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Scategorie"
+  },
+  categorieID: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Categorie"
+  }
+});
+
+module.exports = mongoose.model("Project", ProjectSchema);
+
+
+
+
+
 /*const mongoose = require("mongoose");
 const categorie =require("./scategorie.js");
 const ProjectSchema = new mongoose.Schema({
@@ -19,11 +43,12 @@ const ProjectSchema = new mongoose.Schema({
     ref:Scategorie}
 });
 
-module.exports = mongoose.model("Project", ProjectSchema);*/
+module.exports = mongoose.model("Project", ProjectSchema);
 
 
 const mongoose = require("mongoose");
 const Scategorie = require("./scategorie.js");
+const categorie = require("./categorie.js");
 
 const ProjectSchema = new mongoose.Schema({
   
@@ -31,11 +56,17 @@ const ProjectSchema = new mongoose.Schema({
   photo: { type: String },
   description: { type: String, required: true },
   status: { type: String, enum: ["En cours", "Terminé"], default: "en cours" },
+
   scategorieID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "scategorie" 
+  },
+
+  categorieID: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "categorie" 
   }
 });
 
 module.exports = mongoose.model("Project", ProjectSchema);
-
+*/

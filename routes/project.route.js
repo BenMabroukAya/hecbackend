@@ -6,8 +6,449 @@
 // Get project with scategorieId : /scat/:scategorieID
 // Get project with categorieId : /cat/:categorieID
 
+const express = require('express');
+const router = express.Router();
+
+const Scategorie = require("../models/scategorie");
+const Categorie = require("../models/categorie");
+const Project = require('../models/project');
+
+// 👉 Créer un projet en utilisant nomScategorie et Datecategorie
+// POST / : Créer un projet à partir de nomScategorie et Datecategorie
+router.post('/', async (req, res) => {
+    const { title, photo, description, status, nomScategorie, Datecategorie } = req.body;
+
+    try {
+        // Chercher la scategorie
+        const scategorie = await Scategorie.findOne({ nomScategorie });
+        if (!scategorie) {
+            return res.status(404).json({ message: "Scategorie non trouvée" });
+        }
+
+        // Chercher la categorie (année)
+        const categorie = await Categorie.findOne({ Datecategorie });
+        if (!categorie) {
+            return res.status(404).json({ message: "Categorie non trouvée" });
+        }
+
+        // Créer le projet avec les IDs trouvés
+        const newProject = new Project({
+            title,
+            photo,
+            description,
+            status,
+            scategorieID: scategorie._id,
+            categorieID: categorie._id
+        });
+
+        await newProject.save();
+        res.status(201).json({ message: "Projet créé avec succès", project: newProject });
+
+    } catch (error) {
+        res.status(500).json({ message: "Erreur serveur", error: error.message });
+    }
+});
 
 
+// 👉 Get all projects with nomScategorie + Datecategorie
+router.get('/', async (req, res) => {
+    try {
+        const projects = await Project.find({}, null, { sort: { '_id': -1 } })
+            .populate({
+                path: 'scategorieID',
+                select: 'nomScategorie categorieID',
+                populate: {
+                    path: 'categorieID',
+                    select: 'Datecategorie'
+                }
+            })
+            .select('title photo description status scategorieID');
+
+        res.status(200).json(projects);
+    } catch (error) {
+        res.status(400).json({
+            message: "Erreur serveur",
+            details: error.message
+        });
+    }
+});
+
+// 👉 Get project by ID
+router.get('/:projectId', async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.projectId)
+            .populate({
+                path: 'scategorieID',
+                select: 'nomScategorie categorieID',
+                populate: {
+                    path: 'categorieID',
+                    select: 'Datecategorie'
+                }
+            });
+
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        res.status(200).json(project);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+// 👉 Update project by ID
+router.put('/:id', async (req, res) => {
+    try {
+        const updated = await Project.findByIdAndUpdate(
+            req.params.id,
+            { $set: req.body },
+            { new: true }
+        );
+
+        if (!updated) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        const populatedProject = await Project.findById(updated._id)
+            .populate({
+                path: 'scategorieID',
+                select: 'nomScategorie categorieID',
+                populate: {
+                    path: 'categorieID',
+                    select: 'Datecategorie'
+                }
+            });
+
+        res.status(200).json({ message: 'Project updated successfully', project: populatedProject });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+// 👉 Delete project by ID
+router.delete('/:id', async (req, res) => {
+    try {
+        await Project.findByIdAndDelete(req.params.id);
+        res.status(200).json({ message: "Project deleted successfully." });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
+router.get('/scat/name/:nomScategorie', async (req, res) => {
+    try {
+        // Chercher la scatégorie par son nom
+            const nom = req.params.nomScategorie;
+    
+            // Recherche insensible à la casse avec une regex
+            const scategorie = await Scategorie.findOne({
+                nomScategorie: { $regex: new RegExp('^' + nom + '$', 'i') }
+            });
+    
+            if (!scategorie) {
+                return res.status(404).json({ message: "Sous-catégorie non trouvée" });
+            }
+    
+            const projects = await Project.find({ scategorieID: scategorie._id }).exec();
+    
+            res.status(200).json(projects);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+});
+
+/*// 👉 Get projects by scategorie ID
+router.get('/scat/:scategorieID', async (req, res) => {
+    try {
+        const projects = await Project.find({ scategorieID: req.params.scategorieID }).exec();
+        res.status(200).json(projects);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});*/
+
+// 👉 Get projects by Datecategorie
+router.get('/cat/date/:datecategorie', async (req, res) => {
+    try {
+        // 1. Chercher la catégorie par sa date
+        const categorie = await Categorie.findOne({ Datecategorie: req.params.datecategorie }).exec();
+        if (!categorie) {
+            return res.status(404).json({ message: 'Catégorie non trouvée pour cette date' });
+        }
+
+        // 2. Chercher les projets ayant cette catégorie
+        const projects = await Project.find({ categorieID: categorie._id })
+            .populate({
+                path: 'scategorieID',
+                select: 'nomScategorie'
+            })
+            .populate({
+                path: 'categorieID',
+                select: 'Datecategorie'
+            })
+            .exec();
+
+        res.status(200).json(projects);
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+/*// 👉 Get projects by categorie ID
+router.get('/cat/:categorieID', async (req, res) => {
+    try {
+        const sousCategories = await Scategorie.find({ categorieID: req.params.categorieID }).exec();
+        const sousCategorieIDs = sousCategories.map(sc => sc._id);
+
+        const projects = await Project.find({ scategorieID: { $in: sousCategorieIDs } }).exec();
+        res.status(200).json(projects);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});*/
+
+// 👉 Filter projects by Datecategorie and nomScategorie
+router.get('/filter/:datecategorie/:nomScategorie', async (req, res) => {
+    const { datecategorie, nomScategorie } = req.params;
+
+    try {
+        const categorie = await Categorie.findOne({ Datecategorie: datecategorie });
+        if (!categorie) return res.status(404).json({ message: 'Catégorie non trouvée' });
+
+        const scategorie = await Scategorie.findOne({
+            nomScategorie: nomScategorie        });
+
+        if (!scategorie) return res.status(404).json({ message: 'Sous-catégorie non trouvée' });
+
+        const projects = await Project.find({ scategorieID: scategorie._id })
+            .populate({
+                path: 'scategorieID',
+                select: 'nomScategorie categorieID',
+                populate: {
+                    path: 'categorieID',
+                    select: 'Datecategorie'
+                }
+            });
+
+        res.status(200).json(projects);
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+module.exports = router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*const express = require('express');
+const router = express.Router();
+
+const Scategorie = require("../models/scategorie");
+const Categorie = require("../models/categorie");
+const Project = require('../models/project');
+
+//  Create a new project
+router.post('/', async (req, res) => {
+    const newProject = new Project(req.body);
+    try {
+        await newProject.save();
+        res.status(201).json(newProject);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+//  Get all projects with nomScategorie + Datecategorie
+router.get('/', async (req, res) => {
+    try {
+        const projects = await Project.find({}, null, { sort: { '_id': -1 } })
+            .populate({
+                path: 'scategorieID',
+                select: 'nomScategorie categorieID',
+                populate: {
+                    path: 'categorieID',
+                    select: 'Datecategorie'
+                }
+            })
+            .select('title photo description status scategorieID');
+
+        res.status(200).json(projects);
+    } catch (error) {
+        res.status(400).json({
+            message: "Erreur serveur",
+            details: error.message
+        });
+    }
+});
+
+//  Get a single project by ID
+router.get('/:projectId', async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.projectId)
+            .populate({
+                path: 'scategorieID',
+                select: 'nomScategorie categorieID',
+                populate: {
+                    path: 'categorieID',
+                    select: 'Datecategorie'
+                }
+            });
+
+        if (!project) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        res.status(200).json(project);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+//  Update a project by ID
+router.put('/:id', async (req, res) => {
+    try {
+        const updated = await Project.findByIdAndUpdate(
+            req.params.id,
+            { $set: req.body },
+            { new: true }
+        );
+
+        if (!updated) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+
+        const populatedProject = await Project.findById(updated._id)
+            .populate({
+                path: 'scategorieID',
+                select: 'nomScategorie categorieID',
+                populate: {
+                    path: 'categorieID',
+                    select: 'Datecategorie'
+                }
+            });
+
+        res.status(200).json({ message: 'Project updated successfully', project: populatedProject });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+//  Delete a project by ID
+router.delete('/:id', async (req, res) => {
+    try {
+        await Project.findByIdAndDelete(req.params.id);
+        res.status(200).json({ message: "Project deleted successfully." });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+//  Get projects by scategorie ID
+router.get('/scat/:scategorieID', async (req, res) => {
+    try {
+        const projects = await Project.find({ scategorieID: req.params.scategorieID }).exec();
+        res.status(200).json(projects);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+// Get projects by categorie ID
+router.get('/cat/:categorieID', async (req, res) => {
+    try {
+        const sousCategories = await Scategorie.find({ categorieID: req.params.categorieID }).exec();
+        const sousCategorieIDs = sousCategories.map(sc => sc._id);
+
+        const projects = await Project.find({ scategorieID: { $in: sousCategorieIDs } }).exec();
+        res.status(200).json(projects);
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+//   filter by Datecategorie and nomScategorie
+router.get('/filter/:datecategorie/:nomScategorie', async (req, res) => {
+    const { datecategorie, nomScategorie } = req.params;
+
+    try {
+        const categorie = await Categorie.findOne({ Datecategorie: datecategorie });
+        if (!categorie) return res.status(404).json({ message: 'Catégorie non trouvée' });
+
+        const scategorie = await Scategorie.findOne({
+            nomScategorie: nomScategorie,
+            categorieID: categorie._id
+        });
+
+        if (!scategorie) return res.status(404).json({ message: 'Sous-catégorie non trouvée' });
+
+        const projects = await Project.find({ scategorieID: scategorie._id })
+            .populate({
+                path: 'scategorieID',
+                select: 'nomScategorie categorieID',
+                populate: {
+                    path: 'categorieID',
+                    select: 'Datecategorie'
+                }
+            });
+
+        res.status(200).json(projects);
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+module.exports = router;*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
@@ -29,13 +470,26 @@ router.post('/', async (req, res) => {
 // Get all projects
 router.get('/', async (req, res) => {
     try {
+      const projects = await Project.find({}, null, { sort: { '_id': -1 } })
+        .populate("scategorieID", "nom") // Seulement le champ 'nom' si nécessaire
+        .select("title photo description status scategorieID"); // Sélection explicite
+      res.status(200).json(projects);
+    } catch (error) {
+      res.status(400).json({ 
+        message: "Erreur serveur",
+        details: error.message 
+      });
+    }
+  });
+/*router.get('/', async (req, res) => {
+    try {
         const projects = await Project.find({}, null, { sort: { '_id': -1 } }).populate("scategorieID").exec();
         res.status(200).json(projects);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 });
-
+//
 // Get a single project by ID
 router.get('/:projectId', async (req, res) => {
     try {
