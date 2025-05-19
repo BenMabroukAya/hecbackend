@@ -3,18 +3,83 @@
 //GetAll : /
 //Login : /login
 
+require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
 
+// Configuration du transporteur Gmail
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS
+    }
+});
 
-
-
-// Register a new user
+// Route d'enregistrement
 router.post('/register', async (req, res) => {
     try {
-        const { name, email, password, role, avatar } = req.body;
+        const { name, email, password, role } = req.body;
+        if (!name || !email || !password) {
+            return res.status(400).json({ success: false, message: "Veuillez remplir tous les champs obligatoires" });
+        }
+
+        const userExists = await User.findOne({ email });
+        if (userExists) {
+            return res.status(400).json({ success: false, message: "Account already exists !" });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ name, email, password: hashedPassword, role });
+        await newUser.save();
+
+        // Envoi de l'e-mail de bienvenue
+        const info = await transporter.sendMail({
+            from: `"${process.env.MAIL_NAME || 'HEC Électricité'}" <${process.env.MAIL_USER}>`,
+            to: email,
+            replyTo: process.env.MAIL_USER,
+            subject: "Bienvenue chez HEC Électricité",
+            text: `Bonjour ${name},\n\nMerci pour votre inscription chez HEC Électricité.\n\n--\nHEC Électricité\nwww.hec-electricite.com\ncontact@hec.com`,
+            html: `
+                <p>Bonjour <strong>${name}</strong>,</p>
+                <p>Merci pour votre inscription chez <strong>HEC Électricité</strong>.</p>
+                <p>Nous sommes ravis de vous compter parmi nous.</p>
+                <br>
+                <p>--<br>
+                HEC Électricité<br>
+                <a href="http://www.hec-electricite.com" target="_blank">www.hec-electricite.com</a><br>
+                <a href="mailto:contact@hec.com">contact@hec.com</a></p>
+            `
+        });
+
+        console.log("✉️ Email envoyé : %s", info.messageId);
+
+        res.status(201).json({
+            success: true,
+            message: 'User registered successfully.',
+            user: {
+                _id: newUser._id,
+                name: newUser.name,
+                email: newUser.email,
+                role: newUser.role
+            }
+        });
+
+    } catch (error) {
+        console.error("Erreur register + mail :", error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+module.exports = router;
+
+
+/*router.post('/register', async (req, res) => {
+    try {
+        const { name, email, password, role } = req.body;
 
         const user = await User.findOne({ email });
         if (user) {
@@ -28,8 +93,8 @@ router.post('/register', async (req, res) => {
             name,
             email,
             password: hash,
-            role,
-            avatar
+            role
+            
         });
 
         await newUser.save();
@@ -37,7 +102,7 @@ router.post('/register', async (req, res) => {
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
-});
+});*/
 
 /*
 // Register a new user
