@@ -1,60 +1,55 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require("mongoose");
-const dotenv = require('dotenv');
 const cors = require('cors');
+
 const app = express();
 
-// Routes
+// Import des routes
 const projectsRouter = require("./routes/project.route");
 const userRouter = require("./routes/user.route");
 const categorieRouter = require("./routes/categorie.route");
 const scategorieRouter = require("./routes/scategorie.route");
 const messageRouter = require("./routes/message.route");
 
-// Config dotenv
-dotenv.config();
-
-// Middlewares
+// Middleware globaux
 app.use(cors());
 app.use(express.json());
 
-// Connexion à la base de données
-mongoose.connect(process.env.MONGODB_URI || process.env.DATABASE, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log("Successfully connected to MongoDB Atlas"))
-.catch(err => {
-  console.error("Database connection error:", err);
-  // process.exit(1);
-});
+// Connexion à MongoDB
+mongoose.connect(process.env.MONGODB_URI || process.env.DATABASE)
+  .then(() => console.log("✅ Successfully connected to MongoDB Atlas"))
+  .catch(err => {
+    console.error("❌ Database connection error:", err.message);
+    process.exit(1);
+  });
 
-// Routes
+// Routes principales
 app.use("/api/projects", projectsRouter);
-app.use('/api/users', userRouter);
-app.use('/api/categories', categorieRouter);
-app.use('/api/scategories', scategorieRouter);
-app.use('/api/messages', messageRouter);
+app.use("/api/users", userRouter);
+app.use("/api/categories", categorieRouter);
+app.use("/api/scategories", scategorieRouter);
+app.use("/api/messages", messageRouter);
 
-// Test route
+// Route test
 app.get("/", (req, res) => {
   res.send("Welcome To HEC Society!");
 });
 
-// Error handling middleware
+// Middleware d'erreur
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
 });
 
-
-// Start server on defined PORT
+// Lancer le serveur
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`🚀 Server is running on http://localhost:${PORT}`);
 });
 
 module.exports = app;
+
 
 
 /*

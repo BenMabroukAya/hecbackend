@@ -8,7 +8,8 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        match: [/^\S+@\S+\.\S+$/, 'Email invalide.']
     },
     password: {
         type: String,
@@ -20,6 +21,13 @@ const userSchema = new mongoose.Schema({
                                  // user is the simple user or site's visitor
         default: "user"
     },
-
-});
+    isActive: {
+        type: Boolean,
+        default: false
+    },
+},
+    {
+        timestamps: true
+    },
+    );
 module.exports = mongoose.model('User', userSchema);
